@@ -28,7 +28,7 @@ def chatbot(input_text):
     index = VectorstoreIndexCreator().from_loaders([loader])
 
     chain = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo", max_tokens=num_outputs),
+        llm=ChatOpenAI(model="gpt-3.5-turbo"),
         retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
     )
 
