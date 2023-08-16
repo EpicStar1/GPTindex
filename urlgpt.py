@@ -1,17 +1,13 @@
 import openai
-import session_info
 import gradio as gr
 import sys
 import os
 import constants
-from gpt_index import  LLMPredictor
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains import ConversationalRetrievalChain
 
-
-session_info.show()
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
