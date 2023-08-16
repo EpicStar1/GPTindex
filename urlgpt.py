@@ -3,21 +3,19 @@ import gradio as gr
 import sys
 import os
 import constants
+import requests
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains import ConversationalRetrievalChain
-
+from bs4 import BeautifulSoup
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
 def chatbot(input_text):
-    num_outputs = 512  
-   
-    urls = [
-        "https://www.plex.com/products/manufacturing-execution-system",
-        "https://www.plex.com/smart-manufacturing-platform"
-    ]
+    url = 'https://www.plex.com/smart-manufacturing-platform'
+
+    urls = getchildurl(url)
     
     loader = WebBaseLoader(urls)
     
@@ -33,9 +31,32 @@ def chatbot(input_text):
     chat_history.append((input_text, result['answer']))   
     return result['answer']
 
+
+def getchildurl (url):
+    base_add = 'https://www.plex.com'
+    reqs = requests.get(url)
+    soup = BeautifulSoup(reqs.text, 'html.parser')
+    
+    urls = []
+    for link in soup.find_all('a'):
+        url = link.get('href')
+        if (url != None and url != '' and url != '#'):
+            if "https:" in url:
+                urls.append(url)
+            else:
+                url = base_add + url
+                urls.append(url)
+    
+    return urls
+
+
+
+
 iface = gr.Interface(fn=chatbot,
                      inputs=gr.components.Textbox(lines=7, label="Enter your query"),
                      outputs="text",
-                     title="Custom-trained AI Chatbot")
+                     title="Custom-trained AI Chatbot",
+                     allow_flagging=False,
+                     flagging_options=None)
 
 iface.launch(share=True)
