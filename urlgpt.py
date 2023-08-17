@@ -19,7 +19,8 @@ def chatbot(input_text):
 
     urls = [
         'https://www.plex.com/smart-manufacturing-platform',
-        'https://www.plex.com/products/manufacturing-execution-system'
+        'https://www.plex.com/products/manufacturing-execution-system',
+        'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers'
     ]
     
     loader = WebBaseLoader(urls)
@@ -27,7 +28,7 @@ def chatbot(input_text):
     index = VectorstoreIndexCreator().from_loaders([loader])
 
     chain = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model="gpt-3.5-turbo"),
+        llm=ChatOpenAI(model="gpt-3.5-turbo", temperature="0.7"),
         retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
     )
 
@@ -58,8 +59,8 @@ def getchildurl (url):
 iface = gr.Interface(fn=chatbot,
                      inputs=gr.components.Textbox(lines=7, label="Enter your query"),
                      outputs="text",
-                     title="Custom-trained AI Chatbot",
-                     allow_flagging=False,
+                     title="DocuConverse: Empowering Conversations with Knowledge Docs",
+                     allow_flagging='never',
                      flagging_options=None)
 
 iface.launch(share=True)

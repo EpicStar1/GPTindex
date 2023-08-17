@@ -1,13 +1,10 @@
 from gpt_index import SimpleDirectoryReader, GPTListIndex, GPTSimpleVectorIndex, LLMPredictor, PromptHelper
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import UnstructuredURLLoader
-import session_info
 import gradio as gr
 import sys
 import os
 import constants
-
-session_info.show()
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
@@ -37,10 +34,10 @@ def chatbot(input_text):
     return response.response
 
 iface = gr.Interface(fn=chatbot,
-                     inputs=gr.components.Textbox(lines=7, label="Enter your text"),
+                     inputs=gr.components.Textbox(lines=7, label="Enter your query"),
                      outputs="text",
-                     title="Custom-trained AI Chatbot",
-                     allow_flagging=False,
+                     title="DocuConverse: Empowering Conversations with Knowledge Docs",
+                     allow_flagging='never',
                      flagging_options=None)
 
 index = construct_index("docs")
