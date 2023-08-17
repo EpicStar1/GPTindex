@@ -39,7 +39,9 @@ def chatbot(input_text):
 iface = gr.Interface(fn=chatbot,
                      inputs=gr.components.Textbox(lines=7, label="Enter your text"),
                      outputs="text",
-                     title="Custom-trained AI Chatbot")
+                     title="Custom-trained AI Chatbot",
+                     allow_flagging=False,
+                     flagging_options=None)
 
 index = construct_index("docs")
 iface.launch(share=True)

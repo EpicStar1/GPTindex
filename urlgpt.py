@@ -13,9 +13,14 @@ from bs4 import BeautifulSoup
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
 def chatbot(input_text):
-    url = 'https://www.plex.com/smart-manufacturing-platform'
+    #url = 'https://www.plex.com/smart-manufacturing-platform'
 
-    urls = getchildurl(url)
+    #urls = getchildurl(url)
+
+    urls = [
+        'https://www.plex.com/smart-manufacturing-platform',
+        'https://www.plex.com/products/manufacturing-execution-system'
+    ]
     
     loader = WebBaseLoader(urls)
     
@@ -48,8 +53,6 @@ def getchildurl (url):
                 urls.append(url)
     
     return urls
-
-
 
 
 iface = gr.Interface(fn=chatbot,
