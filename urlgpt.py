@@ -64,11 +64,6 @@ iface = gr.Interface(fn=chatbot,
                      allow_flagging='never',
                      flagging_options=None)
 
-def from_persistent_index(self, path: str)-> VectorStoreIndexWrapper:
-        """Load a vectorstore index from a persistent index."""
-        vectorstore = self.vectorstore_cls(persist_directory=path, embedding_function=self.embedding)
-        return VectorStoreIndexWrapper(vectorstore=vectorstore)
-
 if __name__ == '__main__':    
     # url = 'https://www.plex.com/smart-manufacturing-platform'
     
@@ -86,6 +81,5 @@ if __name__ == '__main__':
     
     loader = WebBaseLoader(childUrls)    
     index = VectorstoreIndexCreator().from_loaders([loader])
-    VectorstoreIndexCreator.from_persistent_index=from_persistent_index
 
     iface.launch(share=True)
