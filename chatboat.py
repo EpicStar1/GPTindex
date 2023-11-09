@@ -7,28 +7,31 @@ import requests
 from urllib.parse import urlsplit
 import validators
 import tldextract
+from langchain import hub
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains import ConversationalRetrievalChain
-from bs4 import BeautifulSoup
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.indexes.vectorstore import VectorStoreIndexWrapper
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.schema.runnable import RunnablePassthrough
+from bs4 import BeautifulSoup
+from langchain.document_loaders import AsyncHtmlLoader
+from langchain.document_transformers import Html2TextTransformer
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
 def chatbot(query): 
-    chain = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model="gpt-3.5-turbo", temperature="0.7"),
-        retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
-    )
-    
-    chat_history = []
-    result = chain({"question": query, "chat_history": chat_history}) 
-    chat_history.append((query, result['answer']))  
+    retriever = vectorstore.as_retriever()
+    rag_prompt = hub.pull("rlm/rag-prompt")   
 
-    return result['answer']
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature="0.7")
+    rag_chain = {"context": retriever, "question": RunnablePassthrough()} | rag_prompt | llm
+
+    result = rag_chain.invoke(query)
+    
+    return result.content
 
 # Get all child url present on page
 def getchildurl (url):
@@ -49,11 +52,28 @@ def getchildurl (url):
                     urls.append(url)   
     return urls
 
-
 # Check valid URL
 def is_valid_url(url):
     extracted = tldextract.extract(url)
     return validators.url(url) and bool(extracted.domain) and bool(extracted.suffix)
+
+
+# Load URL using Web based loader
+def webbasedloader(childUrls): 
+    loader = WebBaseLoader(childUrls)    
+    data = loader.load()
+
+    return data
+
+# Load URL using Asynchronous html loader
+def htmlloader(childUrls):
+    loader = AsyncHtmlLoader(childUrls)
+    docs = loader.load()
+
+    html2text = Html2TextTransformer()
+    docs_transformed = html2text.transform_documents(docs)
+
+    return docs_transformed
 
 
 # Gradio interface for user input
@@ -64,14 +84,9 @@ iface = gr.Interface(fn=chatbot,
                      allow_flagging='never',
                      flagging_options=None)
 
-def from_persistent_index(self, path: str)-> VectorStoreIndexWrapper:
-        """Load a vectorstore index from a persistent index."""
-        vectorstore = self.vectorstore_cls(persist_directory=path, embedding_function=self.embedding)
-        return VectorStoreIndexWrapper(vectorstore=vectorstore)
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     # url = 'https://www.plex.com/smart-manufacturing-platform'
-    
     urls = [
         'https://www.plex.com/smart-manufacturing-platform',
         'https://www.plex.com/products/manufacturing-execution-system',
@@ -83,9 +98,13 @@ if __name__ == '__main__':
         uniqueUrl.update(getchildurl(url))
 
     childUrls = list(uniqueUrl)
-    
-    loader = WebBaseLoader(childUrls)    
-    index = VectorstoreIndexCreator().from_loaders([loader])
-    VectorstoreIndexCreator.from_persistent_index=from_persistent_index
 
+    data = webbasedloader(childUrls)
+    #data = htmlloader(childUrls)
+
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)    
+    splits = text_splitter.split_documents(data)
+
+    vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
+    
     iface.launch(share=True)
