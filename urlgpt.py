@@ -1,6 +1,4 @@
-import openai
 import gradio as gr
-import sys
 import os
 import constants
 import requests
@@ -12,9 +10,6 @@ from langchain.document_loaders import WebBaseLoader
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains import ConversationalRetrievalChain
 from bs4 import BeautifulSoup
-from langchain.vectorstores import Chroma
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 
 os.environ["OPENAI_API_KEY"] = constants.APIKEY
 
@@ -65,21 +60,32 @@ iface = gr.Interface(fn=chatbot,
                      flagging_options=None)
 
 if __name__ == '__main__':    
-    # url = 'https://www.plex.com/smart-manufacturing-platform'
-    
+    # urls = [
+    #     'https://www.plex.com/smart-manufacturing-platform',
+    #     'https://www.plex.com/products/manufacturing-execution-system',
+    #     'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers'
+    # ]
+
     urls = [
         'https://www.plex.com/smart-manufacturing-platform',
         'https://www.plex.com/products/manufacturing-execution-system',
-        'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers'
+        'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers',
+        'https://www.plex.com/products/asset-performance-management/apm-guide',
+        'https://www.plex.com/products/analytics-and-industrial-iot/what-is-iiot',
+        'https://www.plex.com/industries/plastics-and-rubber',
+        'https://www.plex.com/products/quality-management-system/what-quality-management-system-qms'
     ]
 
-    uniqueUrl = set()
-    for url in urls:
-        uniqueUrl.update(getchildurl(url))
+    loader = WebBaseLoader(urls)
 
-    childUrls = list(uniqueUrl)
+    # uniqueUrl = set()
+    # for url in urls:
+    #     uniqueUrl.update(getchildurl(url))
+
+    # childUrls = list(uniqueUrl)
     
-    loader = WebBaseLoader(childUrls)    
+    #loader = WebBaseLoader(childUrls) 
+       
     index = VectorstoreIndexCreator().from_loaders([loader])
 
     iface.launch(share=True)

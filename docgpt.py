@@ -1,8 +1,6 @@
-from gpt_index import SimpleDirectoryReader, GPTListIndex, GPTSimpleVectorIndex, LLMPredictor, PromptHelper
+from llama_index import GPTVectorStoreIndex, SimpleDirectoryReader, LLMPredictor, ServiceContext, StorageContext, load_index_from_storage
 from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import UnstructuredURLLoader
 import gradio as gr
-import sys
 import os
 import constants
 
@@ -11,26 +9,28 @@ os.environ["OPENAI_API_KEY"] = constants.APIKEY
 def construct_index(directory_path):
     max_input_size = 4096
     num_outputs = 512
-    max_chunk_overlap = 20
+    max_chunk_overlap = 1
     chunk_size_limit = 600  
    
-    prompt_helper = PromptHelper(max_input_size, num_outputs, max_chunk_overlap, chunk_size_limit=chunk_size_limit)
-
     llm_predictor = LLMPredictor(llm=ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo", max_tokens=num_outputs))
+    service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
 
     documents = SimpleDirectoryReader(directory_path).load_data()
-    #print(documents);
 
-    index = GPTSimpleVectorIndex(documents, llm_predictor=llm_predictor, prompt_helper=prompt_helper)
+    index = GPTVectorStoreIndex.from_documents(documents, service_context=service_context)  
+    #Directory in which the indexes will be stored  
+    index.storage_context.persist(persist_dir="indexes")
 
-    index.save_to_disk('index.json')
     #print(index)
     return index
 
 def chatbot(input_text):
-    index = GPTSimpleVectorIndex.load_from_disk('index.json')
-    #print(index)
-    response = index.query(input_text, response_mode="compact")
+    # rebuild storage context
+    storage_context = StorageContext.from_defaults(persist_dir="indexes")    
+    #load indexes from directory using storage_context 
+    query_engne = load_index_from_storage(storage_context).as_query_engine()    
+    response = query_engne.query(input_text)    
+    #returning the response
     return response.response
 
 iface = gr.Interface(fn=chatbot,
