@@ -60,21 +60,19 @@ iface = gr.Interface(fn=chatbot,
                      flagging_options=None)
 
 if __name__ == '__main__':    
+    urls = [
+        'https://docs.plex.com/pmc/en-us/engineering/parts/adding-and-editing-parts.htm',
+        'https://docs.plex.com/pmc/en-us/engineering/parts/copying-parts.htm',
+        'https://docs.plex.com/pmc/en-us/engineering/parts/specifying-part-attributes.htm',
+        'https://docs.plex.com/pmc/en-us/engineering/parts/viewing-part-information.htm'
+    ]
+
     # urls = [
     #     'https://www.plex.com/smart-manufacturing-platform',
     #     'https://www.plex.com/products/manufacturing-execution-system',
-    #     'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers'
+    #     'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers',
+    #     'https://www.plex.com/products/asset-performance-management/apm-guide'
     # ]
-
-    urls = [
-        'https://www.plex.com/smart-manufacturing-platform',
-        'https://www.plex.com/products/manufacturing-execution-system',
-        'https://www.plex.com/industries/food-and-beverage/why-mes-critical-food-and-beverage-manufacturers',
-        'https://www.plex.com/products/asset-performance-management/apm-guide',
-        'https://www.plex.com/products/analytics-and-industrial-iot/what-is-iiot',
-        'https://www.plex.com/industries/plastics-and-rubber',
-        'https://www.plex.com/products/quality-management-system/what-quality-management-system-qms'
-    ]
 
     loader = WebBaseLoader(urls)
 
